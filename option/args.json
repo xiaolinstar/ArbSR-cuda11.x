@@ -1,0 +1,288 @@
+{
+  "debug": {
+    "action": "store_true",
+    "help": "Enable debug mode"
+  },
+  "Hardware": {
+    "n_threads": {
+      "type": "int",
+      "default": 2,
+      "help": "number of threads for data loading"
+    },
+    "cpu": {
+      "type": "bool",
+      "default": "False",
+      "help": "use cpu only"
+    },
+    "n_GPUs": {
+      "type": "int",
+      "default": 1,
+      "help": "number of GPUs"
+    },
+    "seed": {
+      "type": "int",
+      "default": 1,
+      "help": "random seed"
+    }
+  },
+  "Data": {
+    "dir_data": {
+      "type": "str",
+      "default": "E:/icme_workspace/ArbSR-master/utils/dataset/",
+      "help": "dataset directory"
+    },
+    "data_train": {
+      "type": "str",
+      "default": "DIV2K",
+      "help": "train dataset name"
+    },
+    "data_test": {
+      "type": "str",
+      "default": "Set5",
+      "help": "test dataset name"
+    },
+    "data_range": {
+      "type": "str",
+      "default": "1-800/801-810",
+      "help": "train/test data range"
+    },
+    "ext": {
+      "type": "str",
+      "default": "sep",
+      "help": "dataset file extension"
+    },
+    "asymm": {
+      "type": "bool",
+      "default": "True",
+      "help": "use asymmetric scale factors (only used during training phase)"
+    },
+    "scale_1": {
+      "type": "str",
+      "default": "",
+      "help": "super resolution scale_1"
+    },
+    "scale_2": {
+      "type": "str",
+      "default": "",
+      "help": "super resolution scale_2"
+    },
+    "patch_size": {
+      "type": "int",
+      "default": 50,
+      "help": "input patch size"
+    },
+    "rgb_range": {
+      "type": "int",
+      "default": 255,
+      "help": "maximum value of RGB"
+    },
+    "n_colors": {
+      "type": "int",
+      "default": 3,
+      "help": "number of color channels to use"
+    },
+    "chop": {
+      "type": "bool",
+      "default": "False",
+      "help": "enable memory-efficient forward"
+    },
+    "no_augment": {
+      "action": "store_true",
+      "help": "do not use data augmentation"
+    }
+  },
+  "Model": {
+    "model": {
+      "type": "str",
+      "default": "ArbRCAN",
+      "help": "model name"
+    },
+    "act": {
+      "type": "str",
+      "default": "relu",
+      "help": "activation function"
+    },
+    "pre_train": {
+      "type": "str",
+      "default": "model/RCAN_BIX4.pt",
+      "help": "pre-trained model directory"
+    },
+    "extend": {
+      "type": "str",
+      "default": ".",
+      "help": "pre-trained model directory"
+    },
+    "res_scale": {
+      "type": "float",
+      "default": 1,
+      "help": "residual scaling"
+    },
+    "shift_mean": {
+      "type": "bool",
+      "default": "True",
+      "help": "subtract pixel mean from the input"
+    },
+    "dilation": {
+      "action": "store_true",
+      "help": "use dilated convolution"
+    },
+    "precision": {
+      "type": "str",
+      "default": "single",
+      "choices": "single half",
+      "help": "FP precision for test (single | half)"
+    }
+  },
+  "Training": {
+    "reset": {
+      "action": "store_true",
+      "help": "reset the training"
+    },
+    "test_every": {
+      "type": "int",
+      "default": 1000,
+      "help": "do test per every N batches"
+    },
+    "epochs": {
+      "type": "int",
+      "default": 150,
+      "help": "number of epochs to train"
+    },
+    "batch_size": {
+      "type": "int",
+      "default": 16,
+      "help": "input batch size for training"
+    },
+    "split_batch": {
+      "type": "int",
+      "default": 1,
+      "help": "split the batch into smaller chunks"
+    },
+    "self_ensemble": {
+      "action": "store_true",
+      "help": "use self-ensemble method for test"
+    },
+    "test_only": {
+      "type": "bool",
+      "default": "False",
+      "help": "set this option to test the model"
+    },
+    "gan_k": {
+      "type": "int",
+      "default": 1,
+      "help": "k value for adversarial loss"
+    }
+  },
+  "Optimization": {
+    "lr": {
+      "type": "float",
+      "default": 1e-4,
+      "help": "learning rate"
+    },
+    "lr_decay": {
+      "type": "int",
+      "default": 20,
+      "help": "learning rate decay per N epochs"
+    },
+    "decay_type": {
+      "type": "str",
+      "default": "step",
+      "help": "learning rate decay type"
+    },
+    "gamma": {
+      "type": "float",
+      "default": 0.5,
+      "help": "learning rate decay factor for step decay"
+    },
+    "optimizer": {
+      "default": "ADAM",
+      "choices": "SGD ADAM RMSprop ",
+      "help": "optimizer to use (SGD | ADAM | RMSprop)"
+    },
+    "momentum": {
+      "type": "float",
+      "default": 0.9,
+      "help": "SGD momentum"
+    },
+    "beta_1": {
+      "type": "float",
+      "default": 0.9,
+      "help": "ADAM beta_1"
+    },
+    "beta_2": {
+      "type": "float",
+      "default": 0.999,
+      "help": "ADAM beta_2"
+    },
+    "epsilon": {
+      "type": "float",
+      "default": 1e-8,
+      "help": "ADAM epsilon for numerical stability"
+    },
+    "weight_decay": {
+      "type": "float",
+      "default": 0,
+      "help": "weight decay"
+    },
+    "start_epoch": {
+      "type": "int",
+      "default": 0,
+      "help": "resume from the snapshot, and the start_epoch"
+    }
+  },
+  "Loss": {
+    "loss": {
+      "type": "str",
+      "default": "1*L1",
+      "help": "loss function configuration"
+    },
+    "skip_threshold": {
+      "type": "float",
+      "default": 1e6,
+      "help": "skipping batch that has large error"
+    }
+  },
+  "Log": {
+    "save": {
+      "type": "str",
+      "default": "ArbRCAN",
+      "help": "file name to save"
+    },
+    "load": {
+      "type": "str",
+      "default": ".",
+      "help": "file name to load"
+    },
+    "resume": {
+      "type": "int",
+      "default": 0,
+      "help": "resume from specific checkpoint"
+    },
+    "save_models": {
+      "action": "store_true",
+      "help": "save all intermediate models"
+    },
+    "print_every": {
+      "type": "int",
+      "default": 200,
+      "help": "how many batches to wait before logging training status"
+    },
+    "save_results": {
+      "type": "str",
+      "default": "False",
+      "help": "save output results"
+    }
+  },
+  "QuickTest": {
+    "dir_img": {
+      "type": "str",
+      "default": "haha",
+      "help": "image directory for quick test"
+    },
+    "sr_size": {
+      "type": "str",
+      "default": "512+512",
+      "help": "size of SR images for quick test"
+    }
+  }
+}
