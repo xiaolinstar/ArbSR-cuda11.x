@@ -19,7 +19,7 @@ class Trainer:
         self.model = my_model
         self.loss = my_loss
         self.optimizer = utility.make_optimizer(args, self.model)
-        self.scheduler = utility.make_optimizer(args, self.optimizer)
+        self.scheduler = utility.make_scheduler(args, self.optimizer)
 
         if self.args.load != '.':
             self.optimizer.load_state_dict(
