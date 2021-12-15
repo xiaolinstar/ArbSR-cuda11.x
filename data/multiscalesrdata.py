@@ -48,10 +48,10 @@ class SRData(data.Dataset):
             # If the binary file exists, load it. If not, make it.
             list_hr, list_lr = self._scan()
             self.images_hr = self._check_and_load(
-                args.ext, list_hr, self._name_hrbin()
+                args.ext, list_hr, self._name_hr_bin()
             )
             self.images_lr = [
-                self._check_and_load(args.ext, l, self._name_lrbin(s))
+                self._check_and_load(args.ext, l, self._name_lr_bin(s))
                 for s, l in zip(self.scale, list_lr)
             ]
         else:
@@ -113,6 +113,7 @@ class SRData(data.Dataset):
             self.repeat = args.test_every // (len(self.images_hr) // args.batch_size)
 
     # Below functions as used to prepare images
+    # div2k rewrite _scan and _set_filesystem
     def _scan(self):
         names_hr, names_lr = None, None
         names_hr = sorted(
@@ -154,14 +155,15 @@ class SRData(data.Dataset):
         # 输出格式
         self.ext = ('.png', '.png')
 
-    def _name_hrbin(self):
+    ######
+    def _name_hr_bin(self):
         return os.path.join(
             self.apath,
             'bin',
             '{}_bin_HR.pt'.format(self.split)
         )
 
-    def _name_lrbin(self, scale):
+    def _name_lr_bin(self, scale):
         return os.path.join(
             self.apath,
             'bin',
@@ -171,7 +173,8 @@ class SRData(data.Dataset):
     def _check_and_load(self, ext, l, f, verbose=True, load=True):
         if os.path.isfile(f) and ext.find('reset') < 0:
             if load:
-                if verbose: print('Loading {}...'.format(f))
+                if verbose:
+                    print('Loading {}...'.format(f))
                 with open(f, 'rb') as _f:
                     ret = pickle.load(_f)
                 return ret
@@ -195,7 +198,7 @@ class SRData(data.Dataset):
         lr, hr, filename = self._load_file(idx)
         lr, hr = self.get_patch(lr, hr)
         lr, hr = common.set_channel(lr, hr, n_channels=self.args.n_colors)
-        lr_tensor, hr_tensor = common.np2Tensor(
+        lr_tensor, hr_tensor = common.np2tensor(
             lr, hr, rgb_range=self.args.rgb_range
         )
 
@@ -244,16 +247,16 @@ class SRData(data.Dataset):
                     lr,
                     hr,
                     patch_size=self.args.patch_size,
-                    scale=scale_1,
-                    scale2=scale_2
+                    scale_1=scale_1,
+                    scale_2=scale_2
                 )
             else:
                 lr, hr = common.get_patch(
                     lr,
                     hr,
                     patch_size=self.args.patch_size,
-                    scale=scale_1,
-                    scale2=scale_2
+                    scale_1=scale_1,
+                    scale_2=scale_2
                 )
 
             if not self.args.no_augment:

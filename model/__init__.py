@@ -5,6 +5,8 @@ import torch
 from torch import nn
 
 
+# 设置模块的一系列参数
+# 导入模块为arbrcan
 class Model(nn.Module):
     def __init__(self, args, ckp):
         super(Model, self).__init__()

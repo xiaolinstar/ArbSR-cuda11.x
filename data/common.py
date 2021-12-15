@@ -11,25 +11,25 @@ def get_patch(*args, patch_size=96, scale_1=1, scale_2=1):
     tp2 = int(round(scale_2 * patch_size))
     ip = patch_size
 
-    if scale_1==int(scale_1):
+    if scale_1 == int(scale_1):
         step = 1
-    elif (scale_1*2)== int(scale_1*2):
+    elif (scale_1 * 2) == int(scale_1 * 2):
         step = 2
-    elif (scale_1*5) == int(scale_1*5):
+    elif (scale_1 * 5) == int(scale_1 * 5):
         step = 5
     else:
         step = 10
-    if scale_2==int(scale_2):
+    if scale_2 == int(scale_2):
         step2 = 1
-    elif (scale_2*2)== int(scale_2*2):
+    elif (scale_2 * 2) == int(scale_2 * 2):
         step2 = 2
-    elif (scale_2*5) == int(scale_2*5):
+    elif (scale_2 * 5) == int(scale_2 * 5):
         step2 = 5
     else:
         step2 = 10
 
-    iy = random.randrange(2, (ih-ip)//step-2) * step
-    ix = random.randrange(2, (iw-ip)//step2-2) * step2
+    iy = random.randrange(2, (ih - ip) // step - 2) * step
+    ix = random.randrange(2, (iw - ip) // step2 - 2) * step2
 
     tx, ty = int(round(scale_2 * ix)), int(round(scale_1 * iy))
 
@@ -39,6 +39,7 @@ def get_patch(*args, patch_size=96, scale_1=1, scale_2=1):
     ]
 
     return ret
+
 
 def set_channel(*args, n_channels=3):
     def _set_channel(img):
@@ -55,15 +56,17 @@ def set_channel(*args, n_channels=3):
 
     return [_set_channel(a) for a in args]
 
-def np2Tensor(*args, rgb_range=255):
-    def _np2Tensor(img):
+
+def np2tensor(*args, rgb_range=255):
+    def _np2tensor(img):
         np_transpose = np.ascontiguousarray(img.transpose((2, 0, 1)))
         tensor = torch.from_numpy(np_transpose).float()
         tensor.mul_(rgb_range / 255)
 
         return tensor
 
-    return [_np2Tensor(a) for a in args]
+    return [_np2tensor(a) for a in args]
+
 
 def augment(*args, hflip=True, rot=True):
     hflip = hflip and random.random() < 0.5
@@ -71,10 +74,13 @@ def augment(*args, hflip=True, rot=True):
     rot90 = rot and random.random() < 0.5
 
     def _augment(img, rot=True):
-        if hflip: img = img[:, ::-1, :]
-        if vflip: img = img[::-1, :, :]
+        if hflip:
+            img = img[:, ::-1, :]
+        if vflip: 
+            img = img[::-1, :, :]
         if rot:
-            if rot90: img = img.transpose(1, 0, 2)
+            if rot90:
+                img = img.transpose(1, 0, 2)
 
         return img
 
@@ -88,4 +94,3 @@ def augment(*args, hflip=True, rot=True):
         out.append(_augment(args[1], rot=False))
 
     return out
-

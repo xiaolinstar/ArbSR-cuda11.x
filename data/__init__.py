@@ -13,7 +13,7 @@ class Data:
             # you can define your model and decide it's name
             module_train = import_module('data.' + args.data_train.lower())
             # load the dataset, args.data_train is the  dataset name
-            # default: div2k DIV2K
+            # default: div2k, DIV2K
             train_set = getattr(module_train, args.data_train)(args)
 
             self.loader_train = DataLoader(dataset=train_set, batch_size=args.batch_size,

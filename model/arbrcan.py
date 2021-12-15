@@ -10,6 +10,89 @@ def make_model(args, parent=False):
     return ArbRCAN(args)
 
 
+class ArbRCAN(nn.Module):
+    def __init__(self, args, conv=common.default_conv):
+        super(ArbRCAN, self).__init__()
+        self.scale_1, self.scale_2 = None, None
+        n_res_groups = 10
+        n_res_blocks = 20
+        n_feats = 64
+        kernel_size = 3
+        reduction = 16
+        act = nn.ReLU(True)
+        self.n_res_groups = n_res_groups
+
+        # sub_mean & add_mean layers
+        rgb_mean = tuple()
+        if args.data_train == 'DIV2K':
+            print('Use DIV2K mean (0.4488, 0.4371, 0.4040)')
+            rgb_mean = (0.4488, 0.4371, 0.4040)
+        elif args.data_train == 'DIVFlickr2K':
+            print('Use DIVFlickr2K mean (0.4690, 0.4490, 0.4036)')
+            rgb_mean = (0.4690, 0.4490, 0.4036)
+        rgb_std = (1.0, 1.0, 1.0)
+        self.sub_mean = common.MeanShift(args.rgb_range, rgb_mean, rgb_std)
+        self.add_mean = common.MeanShift(args.rgb_range, rgb_mean, rgb_std, 1)
+
+        # head module
+        modules_head = [conv(args.n_colors, n_feats, kernel_size)]
+        self.head = nn.Sequential(*modules_head)
+
+        # body module
+        modules_body = [
+            ResidualGroup(conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale,
+                          n_resblocks=n_res_blocks) for _ in range(n_res_groups)]
+        modules_body.append(conv(n_feats, n_feats, kernel_size))
+        self.body = nn.Sequential(*modules_body)
+
+        # tail module
+        modules_tail = [
+            None,  # placeholder to match pre-trained RCAN model
+            conv(n_feats, args.n_colors, kernel_size)]
+        self.tail = nn.Sequential(*modules_tail)
+
+        #   our plug-in module
+        # scale-aware feature adaption block
+        # For RCAN, feature adaption is performed after each backbone block, i.e., K=1
+        self.K = 1
+        sa_adapt = []
+        for i in range(self.n_res_groups // self.K):
+            sa_adapt.append(SA_adapt(64))
+        self.sa_adapt = nn.Sequential(*sa_adapt)
+
+        # scale-aware upsampling layer
+        self.sa_upsample = SA_upsample(64)
+
+    def set_scale(self, scale_1, scale_2):
+        self.scale_2 = scale_2
+        self.scale_1 = scale_1
+
+    def forward(self, x):
+        # head
+        x = self.sub_mean(x)
+        x = self.head(x)
+
+        # body
+        res = x
+        for i in range(self.n_res_groups):
+            res = self.body[i](res)
+            # scale-aware feature adaption
+            if (i + 1) % self.K == 0:
+                res = self.sa_adapt[i](res, self.scale_1, self.scale_2)
+
+        res = self.body[-1](res)
+        res += x
+
+        # scale-aware upsampling
+        res = self.sa_upsample(res, self.scale_1, self.scale_2)
+
+        # tail
+        x = self.tail[1](res)
+        x = self.add_mean(x)
+
+        return x
+
+
 # Channel Attention (CA) Layer
 class CALayer(nn.Module):
     def __init__(self, channel, reduction=16):
@@ -261,86 +344,3 @@ def grid_sample(x, offset, scale, scale2):
     output = F.grid_sample(x, grid, padding_mode='zeros')
 
     return output
-
-
-class ArbRCAN(nn.Module):
-    def __init__(self, args, conv=common.default_conv):
-        super(ArbRCAN, self).__init__()
-        self.scale_1, self.scale_2 = None, None
-        n_resgroups = 10
-        n_resblocks = 20
-        n_feats = 64
-        kernel_size = 3
-        reduction = 16
-        act = nn.ReLU(True)
-        self.n_resgroups = n_resgroups
-
-        # sub_mean & add_mean layers
-        rgb_mean = tuple()
-        if args.data_train == 'DIV2K':
-            print('Use DIV2K mean (0.4488, 0.4371, 0.4040)')
-            rgb_mean = (0.4488, 0.4371, 0.4040)
-        elif args.data_train == 'DIVFlickr2K':
-            print('Use DIVFlickr2K mean (0.4690, 0.4490, 0.4036)')
-            rgb_mean = (0.4690, 0.4490, 0.4036)
-        rgb_std = (1.0, 1.0, 1.0)
-        self.sub_mean = common.MeanShift(args.rgb_range, rgb_mean, rgb_std)
-        self.add_mean = common.MeanShift(args.rgb_range, rgb_mean, rgb_std, 1)
-
-        # head module
-        modules_head = [conv(args.n_colors, n_feats, kernel_size)]
-        self.head = nn.Sequential(*modules_head)
-
-        # body module
-        modules_body = [
-            ResidualGroup(conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale,
-                          n_resblocks=n_resblocks) for _ in range(n_resgroups)]
-        modules_body.append(conv(n_feats, n_feats, kernel_size))
-        self.body = nn.Sequential(*modules_body)
-
-        # tail module
-        modules_tail = [
-            None,  # placeholder to match pre-trained RCAN model
-            conv(n_feats, args.n_colors, kernel_size)]
-        self.tail = nn.Sequential(*modules_tail)
-
-        #   our plug-in module
-        # scale-aware feature adaption block
-        # For RCAN, feature adaption is performed after each backbone block, i.e., K=1
-        self.K = 1
-        sa_adapt = []
-        for i in range(self.n_resgroups // self.K):
-            sa_adapt.append(SA_adapt(64))
-        self.sa_adapt = nn.Sequential(*sa_adapt)
-
-        # scale-aware upsampling layer
-        self.sa_upsample = SA_upsample(64)
-
-    def set_scale(self, scale_1, scale_2):
-        self.scale_2 = scale_2
-        self.scale_1 = scale_1
-
-    def forward(self, x):
-        # head
-        x = self.sub_mean(x)
-        x = self.head(x)
-
-        # body
-        res = x
-        for i in range(self.n_resgroups):
-            res = self.body[i](res)
-            # scale-aware feature adaption
-            if (i + 1) % self.K == 0:
-                res = self.sa_adapt[i](res, self.scale_1, self.scale_2)
-
-        res = self.body[-1](res)
-        res += x
-
-        # scale-aware upsampling
-        res = self.sa_upsample(res, self.scale_1, self.scale_2)
-
-        # tail
-        x = self.tail[1](res)
-        x = self.add_mean(x)
-
-        return x
