@@ -276,7 +276,7 @@
   "QuickTest": {
     "dir_img": {
       "type": "str",
-      "default": "haha",
+      "default": "experiment/quick_test/img_004.png",
       "help": "image directory for quick test"
     },
     "sr_size": {
