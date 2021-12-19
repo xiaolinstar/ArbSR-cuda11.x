@@ -21,6 +21,7 @@ class Trainer:
         self.optimizer = utility.make_optimizer(args, self.model)
         self.scheduler = utility.make_scheduler(args, self.optimizer)
 
+        # 可以接着上次训练继续...
         if self.args.load != '.':
             self.optimizer.load_state_dict(
                 torch.load(os.path.join(ckp.dir, 'optimizer.pt'))
@@ -31,11 +32,14 @@ class Trainer:
         self.error_last = 1e8
 
     def train(self):
-        self.scheduler.step()
+        # self.scheduler.step()
+
+        """不太理解这里，loss.step()是什么意思"""
         self.loss.step()
         epoch = self.scheduler.last_epoch + 1
 
         self.loss.start_log()
+        # 训练的时候使用model.train，评估的时候使用model.eval，放在for data target in dataloader外
         self.model.train()
 
         timer_data, timer_model = utility.timer(), utility.timer()
@@ -44,7 +48,7 @@ class Trainer:
         if epoch == 1:
             self.loader_train.dataset.first_epoch = True
             # adjust learning rate
-            lr = 5e5
+            lr = 5e-5
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = lr
         else:
@@ -89,6 +93,7 @@ class Trainer:
                     timer_data.release()
                 ))
             timer_data.tic()
+        self.scheduler.step()
 
         self.loss.end_log(len(self.loader_train))
         self.error_last = self.loss.log[-1, 1]

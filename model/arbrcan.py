@@ -341,6 +341,7 @@ def grid_sample(x, offset, scale, scale2):
     grid = grid.permute(0, 2, 3, 1)
 
     # sampling
-    output = F.grid_sample(x, grid, padding_mode='zeros')
+    """警告，这里align_corners参数以前默认是True，现在默认参数是False"""
+    output = F.grid_sample(x, grid, padding_mode='zeros', align_corners=True)
 
     return output

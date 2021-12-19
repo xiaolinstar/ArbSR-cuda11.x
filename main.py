@@ -9,9 +9,7 @@ from option import option
 if __name__ == '__main__':
     args = option.get_parse_from_json()
     torch.manual_seed(args.seed)
-    #
-    # for k in args.__dict__:
-    #     print(k, ":", args.__dict__[k])
+
     # checkpoint里面写的是什么我现在还不清楚
     checkpoint = utils.utility.checkpoint(args)
 

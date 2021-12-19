@@ -280,6 +280,5 @@ def make_scheduler(args, my_optimizer):
             # last_epoch = args.start_epoch
         )
     # start_epoch: 0
-    scheduler.step(args.start_epoch - 1)
-
+    # scheduler.step(args.start_epoch - 1)
     return scheduler
