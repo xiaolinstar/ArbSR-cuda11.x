@@ -48,7 +48,8 @@ class checkpoint():
         now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
 
         if args.load == '.':
-            if args.save == '.': args.save = now
+            if args.save == '.':
+                args.save = now
             self.dir = './experiment/' + args.save
         else:
             self.dir = './experiment/' + args.load
@@ -236,6 +237,9 @@ def ssim(img1, img2):
 def make_optimizer(args, my_model):
     trainable = filter(lambda x: x.requires_grad, my_model.parameters())
 
+    kwargs = dict()
+    optimizer_function = None
+    # default: 'ADAM
     if args.optimizer == 'SGD':
         optimizer_function = optim.SGD
         kwargs = {'momentum': args.momentum}
@@ -256,11 +260,13 @@ def make_optimizer(args, my_model):
 
 
 def make_scheduler(args, my_optimizer):
+    scheduler = None
+    # default: 'step'
     if args.decay_type == 'step':
         scheduler = lrs.StepLR(
             my_optimizer,
             step_size=args.lr_decay,
-            gamma=args.gamma,
+            gamma=args.gamma
             # last_epoch = args.start_epoch
         )
     elif args.decay_type.find('step') >= 0:
@@ -273,7 +279,7 @@ def make_scheduler(args, my_optimizer):
             gamma=args.gamma
             # last_epoch = args.start_epoch
         )
-
+    # start_epoch: 0
     scheduler.step(args.start_epoch - 1)
 
     return scheduler

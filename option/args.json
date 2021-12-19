@@ -11,7 +11,7 @@
     },
     "cpu": {
       "type": "bool",
-      "default": "False",
+      "default": "True",
       "help": "use cpu only"
     },
     "n_GPUs": {
@@ -28,7 +28,7 @@
   "Data": {
     "dir_data": {
       "type": "str",
-      "default": "E:/icme_workspace/ArbSR-master/utils/dataset/",
+      "default": "D:/dataset/",
       "help": "dataset directory"
     },
     "data_train": {

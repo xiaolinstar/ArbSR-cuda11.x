@@ -106,7 +106,7 @@ class Trainer:
         def _prepare(tensor):
             if self.args.precision == 'half':
                 tensor = tensor.half()
-                return tensor.to(device)
+            return tensor.to(device)
 
         return [_prepare(a) for a in args]
 
