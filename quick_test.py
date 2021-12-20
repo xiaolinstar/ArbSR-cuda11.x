@@ -23,6 +23,7 @@ if __name__ == '__main__':
     my_model = ArbRCAN(args).to(device)
     print(args.resume)
 
+    # 加载学习到的最优的模型参数
     ckp = torch.load('experiment/ArbRCAN/model/model_'+str(args.resume)+'.pt', map_location=device)
 
     my_model.load_state_dict(ckp)

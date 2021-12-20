@@ -2,11 +2,10 @@ import os
 import math
 import time
 import datetime
-from functools import reduce
 
+import imageio
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.misc as misc
 import cv2
 import torch
 import torch.optim as optim
@@ -16,16 +15,18 @@ import matplotlib
 matplotlib.use('Agg')
 
 
-class timer():
+# 一个计时器
+class Timer:
     def __init__(self):
-        self.acc = 0
+        self.acc = 0  # accumulate time
+        self.start_time = None
         self.tic()
 
     def tic(self):
-        self.t0 = time.time()
+        self.start_time = time.time()
 
     def toc(self):
-        return time.time() - self.t0
+        return time.time() - self.start_time
 
     def hold(self):
         self.acc += self.toc()
@@ -40,13 +41,16 @@ class timer():
         self.acc = 0
 
 
-class checkpoint():
+class CheckPoint:
     def __init__(self, args):
         self.args = args
         self.ok = True
         self.log = torch.Tensor()
         now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
 
+        # default:
+        # load: .
+        # save: ArbRCAN
         if args.load == '.':
             if args.save == '.':
                 args.save = now
@@ -56,15 +60,18 @@ class checkpoint():
             if not os.path.exists(self.dir):
                 args.load = '.'
             else:
+                # 加载log信息，是tensor.Tensor()
                 self.log = torch.load(self.dir + '/psnr_log.pt')
                 print('Continue from epoch {}...'.format(len(self.log)))
 
+        # 删除之前运行保存的所有信息
         if args.reset:
             os.system('rm -rf ' + self.dir)
             args.load = '.'
 
         def _make_dir(path):
-            if not os.path.exists(path): os.makedirs(path)
+            if not os.path.exists(path):
+                os.makedirs(path)
 
         _make_dir(self.dir)
         _make_dir(self.dir + '/model')
@@ -73,6 +80,9 @@ class checkpoint():
         open_type = 'a' if os.path.exists(self.dir + '/log.txt') else 'w'
         self.log_file = open(self.dir + '/log.txt', open_type)
         with open(self.dir + '/config.txt', open_type) as f:
+            """
+            config.txt中写当前运行的配置信息，args参数的全部信息
+            """
             f.write(now + '\n\n')
             for arg in vars(args):
                 f.write('{}: {}\n'.format(arg, getattr(args, arg)))
@@ -126,8 +136,9 @@ class checkpoint():
         postfix = ('SR', 'LR', 'HR')
         for v, p in zip(save_list, postfix):
             normalized = v[0].data.mul(255 / self.args.rgb_range)
-            ndarr = normalized.byte().permute(1, 2, 0).cpu().numpy()
-            misc.imsave('{}{}.png'.format(filename, p), ndarr)
+            nd_arr = normalized.byte().permute(1, 2, 0).cpu().numpy()
+            # misc.imsave('{}{}.png'.format(filename, p), nd_arr)
+            imageio.imsave('{}.png'.format(filename), nd_arr)
 
 
 def quantize(img, rgb_range):
@@ -165,10 +176,10 @@ def calc_psnr(sr, hr, scale, rgb_range, benchmark=False):
 
 
 def calc_ssim(img1, img2, scale=2, benchmark=False):
-    '''calculate SSIM
+    """calculate SSIM
     the same outputs as MATLAB's
     img1, img2: [0, 255]
-    '''
+    """
     if benchmark:
         if isinstance(scale, list):
             border = [math.ceil(s) for s in scale]
@@ -212,8 +223,8 @@ def calc_ssim(img1, img2, scale=2, benchmark=False):
 
 
 def ssim(img1, img2):
-    C1 = (0.01 * 255) ** 2
-    C2 = (0.03 * 255) ** 2
+    c1 = (0.01 * 255) ** 2
+    c2 = (0.03 * 255) ** 2
 
     img1 = img1.astype(np.float64)
     img2 = img2.astype(np.float64)
@@ -229,8 +240,8 @@ def ssim(img1, img2):
     sigma2_sq = cv2.filter2D(img2 ** 2, -1, window)[5:-5, 5:-5] - mu2_sq
     sigma12 = cv2.filter2D(img1 * img2, -1, window)[5:-5, 5:-5] - mu1_mu2
 
-    ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) *
-                                                            (sigma1_sq + sigma2_sq + C2))
+    ssim_map = ((2 * mu1_mu2 + c1) * (2 * sigma12 + c2)) / ((mu1_sq + mu2_sq + c1) *
+                                                            (sigma1_sq + sigma2_sq + c2))
     return ssim_map.mean()
 
 

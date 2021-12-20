@@ -10,6 +10,9 @@ matplotlib.use('TKAgg')
 
 
 class Trainer:
+    """为防止训练中断，可以保存每个epoch的训练信息
+    注意：不仅要保存model.state_dict()，还需要保存对应的optimizer.state_dict()
+    """
     def __init__(self, args, loader, my_model, my_loss, ckp):
         self.args = args
         self.scale_1 = args.scale_1
@@ -42,7 +45,7 @@ class Trainer:
         # 训练的时候使用model.train，评估的时候使用model.eval，放在for data target in dataloader外
         self.model.train()
 
-        timer_data, timer_model = utility.timer(), utility.timer()
+        timer_data, timer_model = utility.Timer(), utility.Timer()
 
         # update self.optimizer.param_groups
         if epoch == 1:
@@ -96,11 +99,11 @@ class Trainer:
         self.scheduler.step()
 
         self.loss.end_log(len(self.loader_train))
-        self.error_last = self.loss.log[-1, 1]
-
+        self.error_last = self.loss.log[-1, -1]
+        self.scheduler.state_dict()
         target = self.model
         torch.save(
-            not target.state_dict(),
+            target.state_dict(),
             os.path.join(self.ckp.dir, 'model', 'model_{}.pt'.format(epoch))
         )
 

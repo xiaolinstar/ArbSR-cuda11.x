@@ -22,7 +22,7 @@ def get_trainer(cp, params):
 
 if __name__ == '__main__':
     args = option.get_parse_from_json()
-    checkpoint = utils.utility.checkpoint(args)
+    checkpoint = utils.utility.CheckPoint(args)
     t = get_trainer(checkpoint, args)
 
     while not t.terminate():
