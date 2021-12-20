@@ -145,7 +145,7 @@
     },
     "epochs": {
       "type": "int",
-      "default": 150,
+      "default": 50,
       "help": "number of epochs to train"
     },
     "batch_size": {
