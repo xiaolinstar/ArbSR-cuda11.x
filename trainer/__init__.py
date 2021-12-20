@@ -54,7 +54,7 @@ class Trainer:
         else:
             self.loader_train.dataset.first_epoch = False
             # adjust learning rate
-            lr = self.args.lr * (2 ** (epoch // 30))
+            lr = self.args.lr * (2 ** -(epoch // 30))
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = lr
 
