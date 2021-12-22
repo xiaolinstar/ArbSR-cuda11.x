@@ -24,12 +24,15 @@ class Trainer:
         self.optimizer = utility.make_optimizer(args, self.model)
         self.scheduler = utility.make_scheduler(args, self.optimizer)
 
-        # 可以接着上次训练继续...
+        """可以接着上次训练继续... 注意修改参数resume"""
         if self.args.load != '.':
-            self.optimizer.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'optimizer.pt'))
+            self.model.load_state_dict(
+                torch.load(os.path.join(ckp.dir, 'model', 'model_{}.pt'.format(args.resume)))
             )
-            for _ in range(len(ckp.log)):
+            self.optimizer.load_state_dict(
+                torch.load(os.path.join(ckp.dir, 'optimizer_{}.pt'.format(args.resume)))
+            )
+            for _ in range(args.resume):
                 self.scheduler.step()
 
         self.error_last = 1e8
@@ -39,7 +42,8 @@ class Trainer:
 
         """不太理解这里，loss.step()是什么意思"""
         self.loss.step()
-        epoch = self.scheduler.last_epoch + 1
+        # epoch = self.scheduler.last_epoch + 1
+        epoch = self.args.resume + 1
 
         self.loss.start_log()
         # 训练的时候使用model.train，评估的时候使用model.eval，放在for data target in dataloader外
@@ -100,11 +104,16 @@ class Trainer:
 
         self.loss.end_log(len(self.loader_train))
         self.error_last = self.loss.log[-1, -1]
-        self.scheduler.state_dict()
+
         target = self.model
+        optimizer = self.optimizer
         torch.save(
             target.state_dict(),
             os.path.join(self.ckp.dir, 'model', 'model_{}.pt'.format(epoch))
+        )
+        torch.save(
+            optimizer.state_dict(),
+            os.path.join(self.ckp.dir, 'optimizer_{}.pt'.format(epoch))
         )
 
     # put parameters to cpu or GPU

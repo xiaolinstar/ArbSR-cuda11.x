@@ -11,7 +11,7 @@
     },
     "cpu": {
       "type": "bool",
-      "default": "True",
+      "default": "False",
       "help": "use cpu only"
     },
     "n_GPUs": {
@@ -145,7 +145,7 @@
     },
     "epochs": {
       "type": "int",
-      "default": 50,
+      "default": 150,
       "help": "number of epochs to train"
     },
     "batch_size": {
