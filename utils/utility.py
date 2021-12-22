@@ -75,6 +75,7 @@ class CheckPoint:
 
         _make_dir(self.dir)
         _make_dir(self.dir + '/model')
+        _make_dir(self.dir + '/optimizer')
         _make_dir(self.dir + '/results')
 
         open_type = 'a' if os.path.exists(self.dir + '/log.txt') else 'w'

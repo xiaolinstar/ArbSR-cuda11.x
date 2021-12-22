@@ -30,7 +30,7 @@ class Trainer:
                 torch.load(os.path.join(ckp.dir, 'model', 'model_{}.pt'.format(args.resume)))
             )
             self.optimizer.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'optimizer_{}.pt'.format(args.resume)))
+                torch.load(os.path.join(ckp.dir, 'optimizer', 'optimizer_{}.pt'.format(args.resume)))
             )
             for _ in range(args.resume):
                 self.scheduler.step()
@@ -42,8 +42,8 @@ class Trainer:
 
         """不太理解这里，loss.step()是什么意思"""
         self.loss.step()
-        # epoch = self.scheduler.last_epoch + 1
-        epoch = self.args.resume + 1
+        epoch = self.scheduler.last_epoch + 1
+        # epoch = self.args.resume + 1
 
         self.loss.start_log()
         # 训练的时候使用model.train，评估的时候使用model.eval，放在for data target in dataloader外
@@ -113,7 +113,7 @@ class Trainer:
         )
         torch.save(
             optimizer.state_dict(),
-            os.path.join(self.ckp.dir, 'optimizer_{}.pt'.format(epoch))
+            os.path.join(self.ckp.dir, 'optimizer', 'optimizer_{}.pt'.format(epoch))
         )
 
     # put parameters to cpu or GPU
