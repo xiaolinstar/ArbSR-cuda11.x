@@ -248,6 +248,21 @@
       "default": "ArbRCAN",
       "help": "file name to save"
     },
+    "model_save": {
+      "type": "str",
+      "default": "model",
+      "help": "relative path for model save"
+    },
+    "optimizer_save": {
+      "type": "str",
+      "default": "optimizer",
+      "help": "relative path for optimizer save"
+    },
+    "scheduler_save": {
+      "type": "str",
+      "default": "scheduler",
+      "help": "relative path for scheduler save"
+    },
     "load": {
       "type": "str",
       "default": ".",

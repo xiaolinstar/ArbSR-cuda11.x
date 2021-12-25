@@ -21,3 +21,9 @@ Windows 10
   - opencv
 - cuda官网安装
   - pytorch=1.10.0
+
+# Version 0.5
+- 复现了代码，可以正常执行train，运行150次后生成的模型，可以进行超分辨
+- 修改了部分代码，设置参数resume可以从保存的模型处继续执行
+- 增加参数 model_save, optimizer_save, scheduler_save 保存模型参数的文件夹
+- 删除了checkpoint中不必要的内容，包括log

@@ -27,14 +27,14 @@ class Trainer:
         """可以接着上次训练继续... """
         if self.args.resume != 0:
             self.model.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'model', 'model_{}.pt'.format(args.resume)))
+                torch.load(os.path.join(ckp.dir, args.model_save, 'model_{}.pt'.format(args.resume)))
             )
             self.optimizer.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'optimizer', 'optimizer_{}.pt'.format(args.resume)))
+                torch.load(os.path.join(ckp.dir, args.optimizer_save, 'optimizer_{}.pt'.format(args.resume)))
             )
-            # 更新lr参数，当前load是多少，就迭代多少次
-            for _ in range(args.resume):
-                self.scheduler.step()
+            self.scheduler.load_state_dict(
+                torch.load(os.path.join(ckp.dir, args.scheduler_save, 'scheduler_{}.pt'.format(args.resume)))
+            )
 
         self.error_last = 1e8
 
@@ -106,17 +106,21 @@ class Trainer:
         self.loss.end_log(len(self.loader_train))
         self.error_last = self.loss.log[-1, -1]
 
-        target = self.model
+        target = self.model.get_model()
         optimizer = self.optimizer
-
+        scheduler = self.scheduler
         # 保存模型参数和优化器参数
         torch.save(
             target.state_dict(),
-            os.path.join(self.ckp.dir, 'model', 'model_{}.pt'.format(epoch))
+            os.path.join(self.ckp.dir, self.args.module_save, 'model_{}.pt'.format(epoch))
         )
         torch.save(
             optimizer.state_dict(),
-            os.path.join(self.ckp.dir, 'optimizer', 'optimizer_{}.pt'.format(epoch))
+            os.path.join(self.ckp.dir, self.args.optimizer_save, 'optimizer_{}.pt'.format(epoch))
+        )
+        torch.save(
+            scheduler.state_dict(),
+            os.path.join(self.ckp.dir, self.args.scheduler_save, 'scheduler_{}.pt'.format(epoch))
         )
 
     # put parameters to cpu or GPU
@@ -149,7 +153,7 @@ class Trainer:
                 eval_psnr = 0
                 eval_ssim = 0
 
-                for idx_img, (lr, hr, filename, _) in enumerate(self.loader_test):
+                for idx_img, (lr, hr, filename) in enumerate(self.loader_test):
                     filename = filename[0]
 
                     # prepare LR & HR images
