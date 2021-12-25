@@ -250,7 +250,7 @@
     },
     "load": {
       "type": "str",
-      "default": ".",
+      "default": "149",
       "help": "file name to load"
     },
     "resume": {

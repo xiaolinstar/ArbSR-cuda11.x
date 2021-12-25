@@ -24,14 +24,15 @@ class Trainer:
         self.optimizer = utility.make_optimizer(args, self.model)
         self.scheduler = utility.make_scheduler(args, self.optimizer)
 
-        """可以接着上次训练继续... 注意修改参数resume"""
+        """可以接着上次训练继续... """
         if self.args.load != '.':
             self.model.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'model', 'model_{}.pt'.format(args.resume)))
+                torch.load(os.path.join(ckp.dir, 'model', 'model_{}.pt'.format(args.load)))
             )
             self.optimizer.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'optimizer', 'optimizer_{}.pt'.format(args.resume)))
+                torch.load(os.path.join(ckp.dir, 'optimizer', 'optimizer_{}.pt'.format(args.load)))
             )
+            # 更新lr参数，当前load是多少，就迭代多少次
             for _ in range(args.resume):
                 self.scheduler.step()
 
@@ -107,6 +108,8 @@ class Trainer:
 
         target = self.model
         optimizer = self.optimizer
+
+        # 保存模型参数和优化器参数
         torch.save(
             target.state_dict(),
             os.path.join(self.ckp.dir, 'model', 'model_{}.pt'.format(epoch))
@@ -132,8 +135,7 @@ class Trainer:
             self.test()
             return True
         else:
-            epoch = self.scheduler.last_epoch + 1
-            return epoch >= self.args.epochs
+            return self.scheduler.last_epoch >= self.args.epochs
 
     def test(self):
         self.model.eval()

@@ -45,24 +45,13 @@ class CheckPoint:
     def __init__(self, args):
         self.args = args
         self.ok = True
-        self.log = torch.Tensor()
         now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
 
         # default:
         # load: .
         # save: ArbRCAN
-        if args.load == '.':
-            if args.save == '.':
-                args.save = now
-            self.dir = './experiment/' + args.save
-        else:
-            self.dir = './experiment/' + args.load
-            if not os.path.exists(self.dir):
-                args.load = '.'
-            else:
-                # 加载log信息，是tensor.Tensor()
-                self.log = torch.load(self.dir + '/psnr_log.pt')
-                print('Continue from epoch {}...'.format(len(self.log)))
+
+        self.dir = './experiment/' + args.save
 
         # 删除之前运行保存的所有信息
         if args.reset:
@@ -78,6 +67,7 @@ class CheckPoint:
         _make_dir(self.dir + '/optimizer')
         _make_dir(self.dir + '/results')
 
+        # log.txt config.txt
         open_type = 'a' if os.path.exists(self.dir + '/log.txt') else 'w'
         self.log_file = open(self.dir + '/log.txt', open_type)
         with open(self.dir + '/config.txt', open_type) as f:
@@ -89,20 +79,17 @@ class CheckPoint:
                 f.write('{}: {}\n'.format(arg, getattr(args, arg)))
             f.write('\n')
 
+    """这个方法不知道在哪里有使用"""
     def save(self, trainer, epoch, is_best=False):
         trainer.model.save(self.dir, epoch, is_best=is_best)
         trainer.loss.save(self.dir)
         trainer.loss.plot_loss(self.dir, epoch)
 
         self.plot_psnr(epoch)
-        torch.save(self.log, os.path.join(self.dir, 'psnr_log.pt'))
         torch.save(
             trainer.optimizer.state_dict(),
             os.path.join(self.dir, 'optimizer.pt')
         )
-
-    def add_log(self, log):
-        self.log = torch.cat([self.log, log])
 
     def write_log(self, log, refresh=False):
         print(log)
@@ -122,7 +109,6 @@ class CheckPoint:
         for idx_scale, scale in enumerate(self.args.scale):
             plt.plot(
                 axis,
-                self.log[:, idx_scale].numpy(),
                 label='Scale {}'.format(scale)
             )
         plt.legend()
