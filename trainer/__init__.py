@@ -25,12 +25,12 @@ class Trainer:
         self.scheduler = utility.make_scheduler(args, self.optimizer)
 
         """可以接着上次训练继续... """
-        if self.args.load != '.':
+        if self.args.resume != 0:
             self.model.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'model', 'model_{}.pt'.format(args.load)))
+                torch.load(os.path.join(ckp.dir, 'model', 'model_{}.pt'.format(args.resume)))
             )
             self.optimizer.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'optimizer', 'optimizer_{}.pt'.format(args.load)))
+                torch.load(os.path.join(ckp.dir, 'optimizer', 'optimizer_{}.pt'.format(args.resume)))
             )
             # 更新lr参数，当前load是多少，就迭代多少次
             for _ in range(args.resume):
