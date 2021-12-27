@@ -27,3 +27,15 @@ Windows 10
 - 修改了部分代码，设置参数resume可以从保存的模型处继续执行
 - 增加参数 model_save, optimizer_save, scheduler_save 保存模型参数的文件夹
 - 删除了checkpoint中不必要的内容，包括log
+
+# Version 0.6
+- quick_start：已经设置好了参数，可以直接开始run
+  - 默认设置了cpu=True, sr_size=\[202, 311\], resume=150, dir_img=...
+  - 若你想使用命令行参数灵活调用：务必需要将quick_start设置为False，命令示例如下
+    - `python quick_sr.py --quick_start=False --cpu=False, sr_size=500+500`
+    - 可以在option/args.json中修改相应的参数信息
+- train, test, quick_start均已经可以成功运行
+- 文件夹experiment中下列文件夹保存训练过程中得到的参数state_dict
+  - model
+  - optimizer
+  - scheduler

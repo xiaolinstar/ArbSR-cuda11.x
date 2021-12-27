@@ -1,0 +1,1 @@
+[Epoch 1]	Learning rate: 5.00e-5

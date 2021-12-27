@@ -26,15 +26,17 @@ class Trainer:
 
         """可以接着上次训练继续... """
         if self.args.resume != 0:
-            self.model.load_state_dict(
+
+            self.model.get_model().load_state_dict(
                 torch.load(os.path.join(ckp.dir, args.model_save, 'model_{}.pt'.format(args.resume)))
             )
-            self.optimizer.load_state_dict(
-                torch.load(os.path.join(ckp.dir, args.optimizer_save, 'optimizer_{}.pt'.format(args.resume)))
-            )
-            self.scheduler.load_state_dict(
-                torch.load(os.path.join(ckp.dir, args.scheduler_save, 'scheduler_{}.pt'.format(args.resume)))
-            )
+            if not self.args.test_only:
+                self.optimizer.load_state_dict(
+                    torch.load(os.path.join(ckp.dir, args.optimizer_save, 'optimizer_{}.pt'.format(args.resume)))
+                )
+                self.scheduler.load_state_dict(
+                    torch.load(os.path.join(ckp.dir, args.scheduler_save, 'scheduler_{}.pt'.format(args.resume)))
+                )
 
         self.error_last = 1e8
 
@@ -146,11 +148,15 @@ class Trainer:
 
         with torch.no_grad():
             for idx_scale, _ in enumerate(self.scale_1):
-                self.loader_test.datatest.set_scale(idx_scale)
+                print(type(self.loader_test.dataset))
+                self.loader_test.dataset.set_scale(idx_scale)
                 scale_1 = self.args.scale_1[idx_scale]
                 scale_2 = self.args.scale_2[idx_scale]
 
+                """两个图像质量评价指标"""
+                """PSNR：峰值信噪比"""
                 eval_psnr = 0
+                """SSIM：结构相似性"""
                 eval_ssim = 0
 
                 for idx_img, (lr, hr, filename) in enumerate(self.loader_test):
@@ -176,11 +182,11 @@ class Trainer:
                     if not no_eval:
                         eval_psnr += utility.calc_psnr(
                             sr, hr, [scale_1, scale_2], self.args.rgb_range,
-                            benchmark=self.loader_test.datatest.benchmark
+                            benchmark=self.loader_test.dataset.benchmark
                         )
                         eval_ssim += utility.calc_ssim(
                             sr, hr, [scale_1, scale_2],
-                            benchmark=self.loader_test.datatest.benchmark
+                            benchmark=self.loader_test.dataset.benchmark
                         )
 
                     # save SR results
@@ -207,7 +213,7 @@ class Trainer:
     def crop_border(img_lr, img_hr, scale_1, scale_2):
         _, _, height_lr, width_lr = img_lr.size()
         _, _, height_hr, width_hr = img_hr.size()
-        
+
         height = height_lr if round(height_lr * scale_1) <= height_hr else math.floor(height_hr / scale_1)
         width = width_lr if round(width_lr * scale_2) <= width_hr else math.floor(width_hr / scale_2)
 
@@ -224,9 +230,9 @@ class Trainer:
 
         width_new = width // step[1] * step[1]
         if width_new % 2 == 1:
-            width_new = width // (step[1] * 2) * step[1] * 2
+            width_new = width // (step[1]*2) * step[1] * 2
 
-        img_lr = img_lr[:, :, :height_new, width_new]
+        img_lr = img_lr[:, :, :height_new, :width_new]
         img_hr = img_hr[:, :, :round(scale_1*height_new), :round(scale_2*width_new)]
 
         return img_lr, img_hr

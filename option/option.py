@@ -82,7 +82,9 @@ def get_parse_from_json(json_path='option/args.json'):
                 ]
                 p.scale_2 = p.scale_1
             assert len(p.scale_1) == len(p.scale_2)
-
+        else:
+            p.scale_1 = list(map(lambda x: float(x), p.scale_1.split('+')))
+            p.scale_2 = list(map(lambda x: float(x), p.scale_2.split('+')))
         return p
     except IOError as e:
         print(e)

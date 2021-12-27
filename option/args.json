@@ -164,7 +164,7 @@
     },
     "test_only": {
       "type": "bool",
-      "default": "False",
+      "default": "True",
       "help": "set this option to test the model"
     },
     "gan_k": {
@@ -289,6 +289,11 @@
     }
   },
   "QuickTest": {
+    "quick_start": {
+      "type": "str",
+      "default": "True",
+      "help": "set quick_start on-off"
+    },
     "dir_img": {
       "type": "str",
       "default": "experiment/quick_test/img_004.png",

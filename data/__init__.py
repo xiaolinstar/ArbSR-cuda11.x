@@ -27,5 +27,5 @@ class Data:
             module_test = import_module('data.' + args.data_test.lower())
             test_set = getattr(module_test, args.data_test)(args, train=False)
 
-        self.loader_test = DataLoader(dataset=test_set, batch_size=args.batch_size,
-                                      shuffle=True, pin_memory=not args.cpu)
+        self.loader_test = DataLoader(dataset=test_set, batch_size=1,
+                                      shuffle=False, pin_memory=not args.cpu)
