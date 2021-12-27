@@ -39,3 +39,8 @@ Windows 10
   - model
   - optimizer
   - scheduler
+
+# Version 0.7
+- 删除了model_150.pt，文件太大，上传到GitHub不方便。
+- 已经将该文将放置到夸克网盘，可永久保存**https://pan.quark.cn/s/3a8f7c884df2**
+- 也可以发email，xlxing@bupt.edu.cn，快速启动quick_start需要这个model_150.pt
