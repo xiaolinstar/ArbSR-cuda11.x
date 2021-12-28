@@ -25,7 +25,7 @@ if __name__ == '__main__':
         args.__dict__['dir_img'] = 'experiment/quick_test/img/img_004.png'
 
     device = None
-    if args.n_GPUs > 0:
+    if args.n_GPUs > 0 and not args.cpu:
         device = 'cuda:0'
     else:
         device = 'cpu'
